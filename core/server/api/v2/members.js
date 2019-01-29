@@ -1,4 +1,4 @@
-const models = require('../../models');
+const membersService = require('../../services/members').api.memberUserObject;
 
 const members = {
     docName: 'members',
@@ -14,7 +14,7 @@ const members = {
         permissions: true,
         validation: {},
         query(frame) {
-            return models.Member.findPage(frame.options);
+            return membersService.list(frame.options);
         }
     },
 
@@ -27,7 +27,7 @@ const members = {
         validation: {},
         permissions: true,
         query(frame) {
-            return models.Member.findOne(frame.data);
+            return membersService.get(frame.data, frame.options);
         }
     }
 };
