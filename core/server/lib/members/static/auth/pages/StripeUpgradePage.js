@@ -103,8 +103,10 @@ export default class StripeSubscriptionPage extends Component {
                             <Elements>
                                 <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
                             </Elements>
-                            <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
                         </StripeProvider>
+                        <div className="flex justify-center mt4">
+                            <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
+                        </div>
                         { this.renderPlansSection() }
                     </div>
                 </div>
