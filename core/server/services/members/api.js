@@ -183,3 +183,7 @@ common.events.on('settings.edited', updateSettingFromModel);
 
 module.exports = api;
 module.exports.publicKey = publicKey;
+module.exports.isPaymentConfigured = function () {
+    let membersSettings = parseMembersSettings();
+    return !!membersSettings.paymentProcessors.length;
+};
