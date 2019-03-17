@@ -7,8 +7,7 @@ const should = require('should'),
     themeService = require('../../../../../server/services/themes'),
     urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    sandbox = sinon.sandbox.create();
+    helpers = require('../../../../../server/services/routing/helpers');
 
 function failTest(done) {
     return function (err) {
@@ -27,36 +26,36 @@ describe('Unit - services/routing/controllers/collection', function () {
             testUtils.DataGenerator.forKnex.createPost()
         ];
 
-        secureStub = sandbox.stub();
-        fetchDataStub = sandbox.stub();
-        renderStub = sandbox.stub();
+        secureStub = sinon.stub();
+        fetchDataStub = sinon.stub();
+        renderStub = sinon.stub();
 
-        sandbox.stub(helpers, 'fetchData').get(function () {
+        sinon.stub(helpers, 'fetchData').get(function () {
             return fetchDataStub;
         });
 
-        sandbox.stub(security.string, 'safe').returns('safe');
+        sinon.stub(security.string, 'safe').returns('safe');
 
-        sandbox.stub(helpers, 'secure').get(function () {
+        sinon.stub(helpers, 'secure').get(function () {
             return secureStub;
         });
 
-        sandbox.stub(themeService, 'getActive').returns({
-            updateTemplateOptions: sandbox.stub(),
+        sinon.stub(themeService, 'getActive').returns({
+            updateTemplateOptions: sinon.stub(),
             config: function (key) {
                key.should.eql('posts_per_page');
                return postsPerPage;
            }
         });
 
-        sandbox.stub(helpers, 'renderEntries').get(function () {
+        sinon.stub(helpers, 'renderEntries').get(function () {
             return renderStub;
         });
 
-        sandbox.stub(filters, 'doFilter');
+        sinon.stub(filters, 'doFilter');
 
-        sandbox.stub(urlService, 'owns');
-        urlService.owns.withArgs('identifier', posts[0].url).returns(true);
+        sinon.stub(urlService, 'owns');
+        urlService.owns.withArgs('identifier', posts[0].id).returns(true);
 
         req = {
             path: '/',
@@ -74,7 +73,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('no params', function (done) {
@@ -284,10 +283,10 @@ describe('Unit - services/routing/controllers/collection', function () {
         res.routerOptions.filter = 'featured:true';
 
         urlService.owns.reset();
-        urlService.owns.withArgs('identifier', posts[0].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[1].url).returns(true);
-        urlService.owns.withArgs('identifier', posts[2].url).returns(false);
-        urlService.owns.withArgs('identifier', posts[3].url).returns(false);
+        urlService.owns.withArgs('identifier', posts[0].id).returns(false);
+        urlService.owns.withArgs('identifier', posts[1].id).returns(true);
+        urlService.owns.withArgs('identifier', posts[2].id).returns(false);
+        urlService.owns.withArgs('identifier', posts[3].id).returns(false);
 
         fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({

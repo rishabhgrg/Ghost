@@ -1,33 +1,31 @@
 var should = require('should'),
     sinon = require('sinon'),
     hbs = require('../../../../server/services/themes/engine'),
-
     themes = require('../../../../server/services/themes'),
     // is only exposed via themes.getActive()
     activeTheme = require('../../../../server/services/themes/active'),
     settingsCache = require('../../../../server/services/settings/cache'),
-    middleware = themes.middleware,
-
-    sandbox = sinon.sandbox.create();
+    middleware = themes.middleware;
 
 describe('Themes', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Middleware', function () {
-        var req, res, blogApp, getActiveThemeStub, settingsCacheStub;
+        var req, res, blogApp, getActiveThemeStub, settingsCacheStub, settingPublicStub;
 
         beforeEach(function () {
-            req = sandbox.spy();
-            res = sandbox.spy();
+            req = sinon.spy();
+            res = sinon.spy();
 
             blogApp = {test: 'obj'};
             req.app = blogApp;
             res.locals = {};
 
-            getActiveThemeStub = sandbox.stub(activeTheme, 'get');
-            settingsCacheStub = sandbox.stub(settingsCache, 'get');
+            getActiveThemeStub = sinon.stub(activeTheme, 'get');
+            settingsCacheStub = sinon.stub(settingsCache, 'get');
+            settingPublicStub = sinon.stub(settingsCache, 'getPublic').returns({});
         });
 
         describe('ensureActiveTheme', function () {
@@ -35,7 +33,7 @@ describe('Themes', function () {
                 mountThemeSpy;
 
             beforeEach(function () {
-                mountThemeSpy = sandbox.spy();
+                mountThemeSpy = sinon.spy();
                 settingsCacheStub.withArgs('active_theme').returns('casper');
             });
 
@@ -95,21 +93,16 @@ describe('Themes', function () {
 
         describe('updateTemplateData', function () {
             var updateTemplateData = middleware[1],
-                themeDataExpectedProps = ['posts_per_page'],
-                blogDataExpectedProps = [
-                    'url', 'title', 'description', 'logo', 'cover_image', 'icon', 'twitter', 'facebook', 'navigation',
-                    'timezone', 'amp'
-                ],
+                themeDataExpectedProps = ['posts_per_page', 'image_sizes'],
                 updateOptionsStub;
 
             beforeEach(function () {
-                updateOptionsStub = sandbox.stub(hbs, 'updateTemplateOptions');
+                updateOptionsStub = sinon.stub(hbs, 'updateTemplateOptions');
 
-                settingsCacheStub.withArgs('title').returns('Bloggy McBlogface');
                 settingsCacheStub.withArgs('labs').returns({});
 
                 getActiveThemeStub.returns({
-                    config: sandbox.stub().returns(2)
+                    config: sinon.stub().returns(2)
                 });
             });
 
@@ -130,15 +123,11 @@ describe('Themes', function () {
                     // posts per page should be set according to the stub
                     templateOptions.data.config.posts_per_page.should.eql(2);
 
-                    // Check blog config
-                    // blog should have all the right properties
-                    templateOptions.data.blog.should.be.an.Object()
-                        .with.properties(blogDataExpectedProps)
-                        .and.size(blogDataExpectedProps.length);
+                    // Check blog config tried to call public settings
+                    settingPublicStub.calledOnce.should.be.true();
+
                     // url should be correct
                     templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
-                    // should get the title
-                    templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
                     // Check labs config
                     templateOptions.data.labs.should.be.an.Object();
@@ -167,15 +156,11 @@ describe('Themes', function () {
                     // posts per page should NOT be set as there's no active theme
                     should.not.exist(templateOptions.data.config.posts_per_page);
 
-                    // Check blog config
-                    // blog should have all the right properties
-                    templateOptions.data.blog.should.be.an.Object()
-                        .with.properties(blogDataExpectedProps)
-                        .and.size(blogDataExpectedProps.length);
+                    // Check blog config tried to call public settings
+                    settingPublicStub.calledOnce.should.be.true();
+
                     // url should be correct
                     templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
-                    // should get the title
-                    templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
                     // Check labs config
                     templateOptions.data.labs.should.be.an.Object();
@@ -203,15 +188,10 @@ describe('Themes', function () {
                     // posts per page should be set according to the stub
                     templateOptions.data.config.posts_per_page.should.eql(2);
 
-                    // Check blog config
-                    // blog should have all the right properties
-                    templateOptions.data.blog.should.be.an.Object()
-                        .with.properties(blogDataExpectedProps)
-                        .and.size(blogDataExpectedProps.length);
+                    // Check blog config tried to call public settings
+                    settingPublicStub.calledOnce.should.be.true();
                     // url should be correct HTTPS!
                     templateOptions.data.blog.url.should.eql('https://127.0.0.1:2369');
-                    // should get the title
-                    templateOptions.data.blog.title.should.eql('Bloggy McBlogface');
 
                     // Check labs config
                     templateOptions.data.labs.should.be.an.Object();

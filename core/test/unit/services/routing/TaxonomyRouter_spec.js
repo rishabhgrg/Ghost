@@ -5,30 +5,29 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     TaxonomyRouter = require('../../../../server/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG = require('../../../../server/services/routing/assets/resource-config'),
-    sandbox = sinon.sandbox.create();
+    RESOURCE_CONFIG = require('../../../../server/services/routing/config/v2');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req, res, next;
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
+        sinon.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
 
-        sandbox.stub(common.events, 'emit');
-        sandbox.stub(common.events, 'on');
+        sinon.stub(common.events, 'emit');
+        sinon.stub(common.events, 'on');
 
-        sandbox.spy(TaxonomyRouter.prototype, 'mountRoute');
-        sandbox.spy(TaxonomyRouter.prototype, 'mountRouter');
+        sinon.spy(TaxonomyRouter.prototype, 'mountRoute');
+        sinon.spy(TaxonomyRouter.prototype, 'mountRouter');
 
-        req = sandbox.stub();
-        res = sandbox.stub();
-        next = sandbox.stub();
+        req = sinon.stub();
+        res = sinon.stub();
+        next = sinon.stub();
 
         res.locals = {};
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('instantiate', function () {
@@ -63,7 +62,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/');
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
@@ -72,7 +71,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             name: 'tag',
             permalinks: '/tag/:slug/',
             resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
-            data: {tag: _.omit(RESOURCE_CONFIG.QUERY.tag, 'alias')},
+            data: {tag: RESOURCE_CONFIG.QUERY.tag},
             filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,

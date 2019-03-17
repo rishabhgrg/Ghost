@@ -6,8 +6,7 @@ var should = require('should'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
     helpers = require('../../../server/helpers'),
     urlService = require('../../../server/services/url'),
-    api = require('../../../server/api'),
-    sandbox = sinon.sandbox.create();
+    api = require('../../../server/api');
 
 describe('{{url}} helper', function () {
     var rendered;
@@ -19,15 +18,15 @@ describe('{{url}} helper', function () {
     beforeEach(function () {
         rendered = null;
 
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
 
-        sandbox.stub(api.settings, 'read').callsFake(function () {
+        sinon.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     after(function () {
@@ -61,7 +60,7 @@ describe('{{url}} helper', function () {
             created_at: new Date(0)
         });
 
-        urlService.getUrlByResourceId.withArgs(post.id, {absolute: 'true', secure: undefined, withSubdirectory: true}).returns('http://localhost:82832/slug/');
+        urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: undefined, withSubdirectory: true}).returns('http://localhost:82832/slug/');
 
         rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
         should.exist(rendered);
@@ -79,7 +78,7 @@ describe('{{url}} helper', function () {
             secure: true
         });
 
-        urlService.getUrlByResourceId.withArgs(post.id, {absolute: 'true', secure: true, withSubdirectory: true}).returns('https://localhost:82832/slug/');
+        urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: true, withSubdirectory: true}).returns('https://localhost:82832/slug/');
 
         rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
         should.exist(rendered);

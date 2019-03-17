@@ -1,11 +1,13 @@
-var debug = require('ghost-ignition').debug('themes'),
-    common = require('../../lib/common'),
-    themeLoader = require('./loader'),
-    active = require('./active'),
-    validate = require('./validate'),
-    Storage = require('./Storage'),
-    settingsCache = require('../settings/cache'),
-    themeStorage;
+const debug = require('ghost-ignition').debug('themes');
+const common = require('../../lib/common');
+const themeLoader = require('./loader');
+const active = require('./active');
+const validate = require('./validate');
+const Storage = require('./Storage');
+const settingsCache = require('../settings/cache');
+const engineDefaults = require('./engines/defaults');
+
+let themeStorage;
 
 // @TODO: reduce the amount of things we expose to the outside world
 // Make this a nice clean sensible API we can all understand!
@@ -36,7 +38,7 @@ module.exports = {
                             common.logging.warn(new common.errors.ThemeValidationError({
                                 errorType: 'ThemeWorksButHasErrors',
                                 message: common.i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
-                                errorDetails: JSON.stringify(checkedTheme.results.error, null, '\t')
+                                errorDetails: checkedTheme.results.error
                             }));
                         }
 
@@ -47,7 +49,7 @@ module.exports = {
                         if (err.errorDetails) {
                             common.logging.error(new common.errors.ThemeValidationError({
                                 message: common.i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
-                                errorDetails: JSON.stringify(err.errorDetails, null, '\t')
+                                errorDetails: err.errorDetails
                             }));
                         }
 
@@ -79,12 +81,33 @@ module.exports = {
     validate: validate,
     toJSON: require('./to-json'),
     getActive: active.get,
+    getApiVersion: function getApiVersion() {
+        if (this.getActive()) {
+            return this.getActive().engine('ghost-api');
+        } else {
+            return engineDefaults['ghost-api'];
+        }
+    },
     activate: function activate(loadedTheme, checkedTheme, error) {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
         try {
+            let previousGhostAPI;
+
+            if (this.getActive()) {
+                previousGhostAPI = this.getApiVersion();
+            }
+
             active.set(loadedTheme, checkedTheme, error);
+            const currentGhostAPI = this.getApiVersion();
+
             common.events.emit('services.themes.activated');
+
+            if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
+                common.events.emit('services.themes.api.changed');
+                const siteApp = require('../../web/site/app');
+                siteApp.reload();
+            }
         } catch (err) {
             common.logging.error(new common.errors.InternalServerError({
                 message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),

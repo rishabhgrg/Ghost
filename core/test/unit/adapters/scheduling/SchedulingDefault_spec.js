@@ -6,9 +6,7 @@ var should = require('should'),
     express = require('express'),
     bodyParser = require('body-parser'),
     http = require('http'),
-    SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault'),
-
-    sandbox = sinon.sandbox.create();
+    SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault');
 
 describe('Scheduling Default Adapter', function () {
     var scope = {};
@@ -18,13 +16,13 @@ describe('Scheduling Default Adapter', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('success', function () {
         it('addJob (schedule)', function () {
-            sandbox.stub(scope.adapter, 'run');
-            sandbox.stub(scope.adapter, '_execute');
+            sinon.stub(scope.adapter, 'run');
+            sinon.stub(scope.adapter, '_execute');
 
             var dates = [
                 moment().add(1, 'day').subtract(30, 'seconds').toDate(),
@@ -69,7 +67,7 @@ describe('Scheduling Default Adapter', function () {
                 }),
                 allJobs = {};
 
-            sandbox.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
+            sinon.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
                 Object.keys(nextJobs).length.should.eql(121);
                 Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 121);
                 done();
@@ -86,7 +84,7 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('ensure recursive run works', function (done) {
-            sandbox.spy(scope.adapter, '_execute');
+            sinon.spy(scope.adapter, '_execute');
 
             scope.adapter.allJobs = {};
             scope.adapter.runTimeoutInMs = 10;
@@ -107,8 +105,8 @@ describe('Scheduling Default Adapter', function () {
                 }),
                 nextJobs = {};
 
-            sandbox.stub(scope.adapter, 'run');
-            sandbox.stub(scope.adapter, '_pingUrl').callsFake(function () {
+            sinon.stub(scope.adapter, 'run');
+            sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
                 pinged = pinged + 1;
             });
 
@@ -132,8 +130,8 @@ describe('Scheduling Default Adapter', function () {
                 jobsToDelete = {},
                 jobsToExecute = {};
 
-            sandbox.stub(scope.adapter, 'run');
-            sandbox.stub(scope.adapter, '_pingUrl').callsFake(function () {
+            sinon.stub(scope.adapter, 'run');
+            sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
                 pinged = pinged + 1;
             });
 
@@ -226,16 +224,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'GET'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.not.exist(reqQuery.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.not.exist(reqQuery.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl (PUT, and detect publish in the past)', function (done) {
@@ -260,16 +253,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'PUT'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.exist(reqBody.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.exist(reqBody.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl (GET, and detect publish in the past)', function (done) {
@@ -292,16 +280,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'GET'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.exist(reqQuery.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.exist(reqQuery.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl, but blog returns 503', function (done) {

@@ -17,6 +17,7 @@ content/logs/**
 content/themes/**
 !content/themes/casper/**
 node_modules/**
+core/server/lib/members/static/auth/node_modules/**
 **/*.db*
 *.db*
 .af*
@@ -25,7 +26,6 @@ node_modules/**
 .jshintrc
 .jscsrc
 *.iml
-config.js
 core/built/**/*.map
 core/built/**/test-*
 core/built/**/tests-*
@@ -42,3 +42,5 @@ bower_components/**
 gulpfile.js
 !content/themes/casper/gulpfile.js
 package-lock.json
+config.*.json
+!core/server/config/env/**

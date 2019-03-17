@@ -7,9 +7,7 @@ var should = require('should'),
     exporter = rewire('../../../../server/data/exporter'),
     schema = require('../../../../server/data/schema'),
     models = require('../../../../server/models'),
-    schemaTables = Object.keys(schema.tables),
-
-    sandbox = sinon.sandbox.create();
+    schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {
     var tablesStub, queryMock, knexMock;
@@ -19,7 +17,7 @@ describe('Exporter', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('doExport', function () {
@@ -28,16 +26,16 @@ describe('Exporter', function () {
                 full: '2.0.0'
             });
 
-            tablesStub = sandbox.stub(schema.commands, 'getTables').returns(schemaTables);
+            tablesStub = sinon.stub(schema.commands, 'getTables').returns(schemaTables);
 
             queryMock = {
-                whereNot: sandbox.stub(),
-                select: sandbox.stub()
+                whereNot: sinon.stub(),
+                select: sinon.stub()
             };
 
-            knexMock = sandbox.stub().returns(queryMock);
+            knexMock = sinon.stub().returns(queryMock);
 
-            sandbox.stub(db, 'knex').get(function () {
+            sinon.stub(db, 'knex').get(function () {
                 return knexMock;
             });
         });
@@ -49,7 +47,7 @@ describe('Exporter', function () {
             // Execute
             exporter.doExport().then(function (exportData) {
                 // No tables, less the number of excluded tables
-                var expectedCallCount = schemaTables.length - 4;
+                var expectedCallCount = schemaTables.length - exporter.EXCLUDED_TABLES.length;
 
                 should.exist(exportData);
 
@@ -94,8 +92,8 @@ describe('Exporter', function () {
 
             // Execute
             exporter.doExport({include: ['clients', 'client_trusted_domains']}).then(function (exportData) {
-                // all tables, except of the tokens
-                const expectedCallCount = schemaTables.length - 2;
+                // all tables, except of the tokes and sessions
+                const expectedCallCount = schemaTables.length - (exporter.EXCLUDED_TABLES.length - 2);
 
                 should.exist(exportData);
 
@@ -151,7 +149,7 @@ describe('Exporter', function () {
 
     describe('exportFileName', function () {
         it('should return a correctly structured filename', function (done) {
-            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
+            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.resolve({
                     get: function () {
                         return 'testblog';
@@ -162,35 +160,35 @@ describe('Exporter', function () {
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
         });
 
         it('should return a correctly structured filename if settings is empty', function (done) {
-            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
+            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.resolve()
             );
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
         });
 
         it('should return a correctly structured filename if settings errors', function (done) {
-            var settingsStub = sandbox.stub(models.Settings, 'findOne').returns(
+            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.reject()
             );
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);

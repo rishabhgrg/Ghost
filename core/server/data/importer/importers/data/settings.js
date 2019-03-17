@@ -3,7 +3,7 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     _ = require('lodash'),
     BaseImporter = require('./base'),
     models = require('../../../../models'),
-    defaultSettings = require('../../../schema/default-settings.json'),
+    defaultSettings = require('../../../schema').defaultSettings,
     labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
 class SettingsImporter extends BaseImporter {
@@ -67,6 +67,18 @@ class SettingsImporter extends BaseImporter {
             // CASE: we do not import slack hooks, otherwise it can happen very fast that you are pinging someone's slack channel
             if (obj.key === 'slack') {
                 obj.value = JSON.stringify([{url: ''}]);
+            }
+
+            // CASE: export files might contain "0" or "1" for booleans. Model layer needs real booleans.
+            // transform "0" to false
+            if (obj.value === '0' || obj.value === '1') {
+                obj.value = !!+obj.value;
+            }
+
+            // CASE: export files might contain "false" or "true" for booleans. Model layer needs real booleans.
+            // transform "false" to false
+            if (obj.value === 'false' || obj.value === 'true') {
+                obj.value = obj.value === 'true';
             }
         });
 
