@@ -1,6 +1,6 @@
 [submodule "content/themes/casper"]
 	path = content/themes/casper
-	url = ../../rishabbgrg/Casper.git
+	url = ../../rishabhgrg/Casper.git
 [submodule "core/client"]
 	path = core/client
-	url = ../../rishabbgrg/Ghost-Admin.git
+	url = ../../rishabhgrg/Ghost-Admin.git
