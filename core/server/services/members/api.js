@@ -201,7 +201,8 @@ const membersApiInstance = MembersApi({
     listMembers,
     validateMember,
     updateMember,
-    sendEmail
+    sendEmail,
+    logger: common.logging
 });
 
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
