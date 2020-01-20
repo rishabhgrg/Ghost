@@ -17,6 +17,40 @@ module.exports = function apiRoutes() {
 
     const http = apiCanary.http;
 
+    (function ghostAuthModule(router) {
+        const settings = require('../../../../services/settings/cache');
+        const urlUtils = require('../../../../lib/url-utils');
+        const jwt = require('jsonwebtoken');
+        const jose = require('node-jose');
+        const issuer = urlUtils.urlFor('admin', true);
+
+        const dangerousPrivateKey = settings.get('ghost_private_key');
+        const keyStore = jose.JWK.createKeyStore();
+        const keyStoreReady = keyStore.add(dangerousPrivateKey, 'pem');
+
+        const getKeyID = async () => {
+            const key = await keyStoreReady;
+            return key.id;
+        };
+
+        const sign = async (claims, options) => {
+            const kid = await getKeyID();
+            return jwt.sign(Object.assign({kid}, claims), dangerousPrivateKey, Object.assign({
+                issuer,
+                expiresIn: '30m',
+                audience: '@TODO@',
+                algorithm: 'RS256'
+            }, options));
+        };
+
+        router.post('/ghost-identity', mw.authAdminApi, async (req, res) => {
+            // @TODO Must check the role of the user - e.g. Owner, Administrator...
+            // @TODO Must include role or error for Administrator and below
+            const token = await sign({sub: req.user.email});
+            res.json({token});
+        });
+    })(router);
+
     // ## Public
     router.get('/site', mw.publicAdminApi, http(apiCanary.site.read));
 
