@@ -30,16 +30,17 @@ module.exports = function apiRoutes() {
 
         const getKeyID = async () => {
             const key = await keyStoreReady;
-            return key.id;
+            return key.kid;
         };
 
         const sign = async (claims, options) => {
             const kid = await getKeyID();
-            return jwt.sign(Object.assign({kid}, claims), dangerousPrivateKey, Object.assign({
+            return jwt.sign(claims, dangerousPrivateKey, Object.assign({
                 issuer,
                 expiresIn: '30m',
                 audience: '@TODO@',
-                algorithm: 'RS256'
+                algorithm: 'RS256',
+                keyid: kid
             }, options));
         };
 
