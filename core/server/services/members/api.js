@@ -35,7 +35,7 @@ function createApiInstance(config) {
                 }
             },
             getSubject(type) {
-                const siteTitle = settingsCache.get('title');
+                const siteTitle = (settingsCache.get('title') || config.getDomain()) || '';
                 switch (type) {
                 case 'subscribe':
                     return `📫 Confirm your subscription to ${siteTitle}`;
@@ -49,7 +49,8 @@ function createApiInstance(config) {
                 }
             },
             getText(url, type, email) {
-                const siteTitle = settingsCache.get('title');
+                const siteTitle = (settingsCache.get('title') || config.getDomain()) || '';
+                const signature = siteTitle ? `The team at ${siteTitle}` : '';
                 switch (type) {
                 case 'subscribe':
                     return `
@@ -62,7 +63,7 @@ function createApiInstance(config) {
                         For your security, the link will expire in 10 minutes time.
 
                         All the best!
-                        The team at ${siteTitle}
+                        ${signature}
 
                         ---
 
@@ -80,7 +81,7 @@ function createApiInstance(config) {
                         For your security, the link will expire in 10 minutes time.
 
                         See you soon!
-                        The team at ${siteTitle}
+                        ${signature}
 
                         ---
 
@@ -98,7 +99,7 @@ function createApiInstance(config) {
                         For your security, the link will expire in 10 minutes time.
 
                         All the best!
-                        The team at ${siteTitle}
+                        ${signature}
 
                         ---
 
@@ -117,7 +118,7 @@ function createApiInstance(config) {
                         For your security, the link will expire in 10 minutes time.
 
                         See you soon!
-                        The team at ${siteTitle}
+                        ${signature}
 
                         ---
 
@@ -127,7 +128,7 @@ function createApiInstance(config) {
                 }
             },
             getHTML(url, type, email) {
-                const siteTitle = settingsCache.get('title');
+                const siteTitle = (settingsCache.get('title') || config.getDomain()) || '';
                 switch (type) {
                 case 'subscribe':
                     return subscribeEmail({url, email, siteTitle});

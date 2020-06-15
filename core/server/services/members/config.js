@@ -27,9 +27,8 @@ class MembersConfigProvider {
     }
 
     /**
-     * @private
      */
-    _getDomain() {
+    getDomain() {
         const domain = this._urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         return domain && domain[1];
     }
@@ -42,7 +41,7 @@ class MembersConfigProvider {
 
         // Any fromAddress without domain uses site domain, like default setting `noreply`
         if (fromAddress.indexOf('@') < 0) {
-            return `${fromAddress}@${this._getDomain()}`;
+            return `${fromAddress}@${this.getDomain()}`;
         }
         return fromAddress;
     }

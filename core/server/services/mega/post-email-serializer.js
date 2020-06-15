@@ -9,12 +9,19 @@ const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
 
+function getDomain() {
+    const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    return (domain && domain[1]) || '';
+}
+
 const getSite = () => {
     const publicSettings = settingsCache.getPublic();
-    return Object.assign({}, publicSettings, {
+    const site = Object.assign({}, publicSettings, {
         url: urlUtils.urlFor('home', true),
         iconUrl: publicSettings.icon ? urlUtils.urlFor('image', {image: publicSettings.icon}, true) : null
     });
+    site.title = site.title || getDomain();
+    return site;
 };
 
 /**
