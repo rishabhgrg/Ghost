@@ -179,7 +179,8 @@ function createApiInstance(config) {
             StripePrice: models.StripePrice,
             Product: models.Product
         },
-        logger: logging
+        logger: logging,
+        enableDeveloperExperiments: config.getDeveloperExperimentFlag()
     });
 
     return membersApiInstance;

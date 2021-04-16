@@ -39,6 +39,10 @@ class MembersConfigProvider {
         return domain;
     }
 
+    getDeveloperExperimentFlag() {
+        return this._config.get('enableDeveloperExperiments') || false;
+    }
+
     getEmailFromAddress() {
         const fromAddress = this._settingsCache.get('members_from_address') || 'noreply';
 
