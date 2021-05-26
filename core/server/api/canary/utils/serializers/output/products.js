@@ -53,7 +53,9 @@ function serializeProduct(product, options) {
         slug: json.slug,
         created_at: json.created_at,
         updated_at: json.updated_at,
-        stripe_prices: json.stripePrices
+        stripe_prices: json.stripePrices,
+        monthly_price: json.monthlyPrice,
+        yearly_price: json.yearlyPrice
     };
 }
 
@@ -82,6 +84,8 @@ function createSerializer(debugString, serialize) {
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {any} stripe_prices
+ * @prop {any} monthly_price
+ * @prop {any} yearly_price
  */
 
 /**
