@@ -5,6 +5,7 @@ const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../settings/cache');
 const {formattedMemberResponse} = require('./utils');
+const models = require('../../models');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -78,28 +79,12 @@ const updateMemberData = async function (req, res) {
 };
 
 const getDefaultProductPrices = async function () {
-    const page = await membersService.api.productRepository.list({
-        limit: 1
-    });
-    const [product] = page.data;
-    if (product) {
-        const model = await membersService.api.productRepository.get({id: product.get('id')}, {withRelated: ['stripePrices']});
-        const productData = model.toJSON();
-        const prices = productData.stripePrices || [];
-        const activePrices = prices.filter((d) => {
-            return !!d.active;
-        });
-        const monthlyPriceId = settingsCache.get('members_monthly_price_id');
-        const yearlyPriceId = settingsCache.get('members_yearly_price_id');
-        const filteredPrices = activePrices.filter((d) => {
-            return [monthlyPriceId, yearlyPriceId].includes(d.id);
-        });
-        return {
-            product: productData,
-            prices: filteredPrices
-        };
-    }
-    return {};
+    const stripePrices = await models.StripePrice.findAll();
+    const activeStripePrices = stripePrices.filter(price => !!price.get('active')).map(price => price.toJSON());
+    return {
+        prices: activeStripePrices,
+        product: {}
+    };
 };
 
 const getMemberSiteData = async function (req, res) {
